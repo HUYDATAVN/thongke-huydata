@@ -150,11 +150,11 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
 .dlbtn.alt:hover{background:var(--green-mist)}
 .dlbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
 .tool-frame{width:100%;height:80vh;min-height:600px;border:1px solid var(--line);border-radius:16px;margin-top:20px;background:#fff}
-.doc-frame{width:100%;height:600px;min-height:300px;border:1px solid var(--line);border-radius:16px;margin-top:20px;background:#fff;display:block}
+.doc-frame{width:100%;height:82vh;min-height:600px;border:1px solid var(--line);border-radius:16px;margin-top:20px;background:#fff;display:block}
 .viewnote{margin:24px 0 4px;padding:13px 18px;background:var(--cream);border:1px solid var(--line);border-radius:12px;font-size:14px;color:var(--text-mid);font-weight:400;line-height:1.55}
 .viewnote a{color:var(--teal-deep);font-weight:600;text-decoration:underline;white-space:nowrap}
 #reader.wide .wrap-n{max-width:1180px}
-@media(max-width:820px){#reader.wide .wrap-n{padding:0 14px}.tool-frame{height:72vh;min-height:460px}}
+@media(max-width:820px){#reader.wide .wrap-n{padding:0 14px}.tool-frame,.doc-frame{height:74vh;min-height:460px}}
 .backlink{display:inline-flex;align-items:center;gap:6px;margin-top:34px;font-size:14px;font-weight:600;color:var(--teal-deep);cursor:pointer}
 
 .sf{background:var(--green-darkest);color:var(--green-pale);padding:46px 0;font-size:14.5px}
@@ -477,24 +477,7 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
   function crumb(label,hash,leaf){return '<nav class="bc"><a data-nav="top">Trang chủ</a><span>›</span><a href="#'+hash+'">'+esc(label)+'</a><span>›</span>'+esc(leaf)+'</nav>';}
   function zaloHref(){return "https://zalo.me/"+String(state.settings.zalo||"").replace(/\D/g,"");}
   function viewNote(what){return '<p class="viewnote">Xem trực tiếp bên dưới. Cần file '+what+' để dùng riêng? Nhắn Zalo <a href="'+zaloHref()+'" target="_blank" rel="noopener noreferrer">'+esc(fmtPhone(state.settings.zalo))+'</a>.</p>';}
-  var _docFrame=null;
-  function fitFrame(f){if(!f)return;try{var d=f.contentDocument;if(!d||!d.body)return;var h=Math.max(d.body.scrollHeight,d.documentElement.scrollHeight);if(h>80)f.style.height=(h+28)+"px";}catch(e){}}
-  function docAnchorScroll(f,d,ev){
-    var a=(ev.target&&ev.target.closest)?ev.target.closest('a[href]'):null;
-    if(!a)return false;
-    var href=a.getAttribute("href")||"";
-    if(href.charAt(0)!=="#"||href.length<2)return false;
-    var id=decodeURIComponent(href.slice(1)),tgt=null;
-    try{tgt=d.getElementById(id);}catch(e){}
-    if(!tgt){try{tgt=d.querySelector('a[name="'+id.replace(/["\\]/g,"")+'"]');}catch(e){}}
-    if(!tgt)return false;
-    ev.preventDefault();
-    var top=f.getBoundingClientRect().top+(window.pageYOffset||window.scrollY)+tgt.getBoundingClientRect().top-76;
-    window.scrollTo(0,top<0?0:top);
-    return true;
-  }
-  function mountDocFrame(f){_docFrame=f;f.addEventListener("load",function(){fitFrame(f);[150,400,900,1600].forEach(function(ms){setTimeout(function(){fitFrame(f);},ms);});try{var d=f.contentDocument,b=d&&d.body;if(b&&window.ResizeObserver){new ResizeObserver(function(){fitFrame(f);}).observe(b);}if(d)d.addEventListener("click",function(ev){if(docAnchorScroll(f,d,ev))return;setTimeout(function(){fitFrame(f);},60);});}catch(e){}});}
-  window.addEventListener("resize",function(){fitFrame(_docFrame);});
+  var _docBlobUrl=null;
   function renderTool(slug){var t=byslug(state.tools,slug);if(!t){showPage();return;}
     var id="tf-"+Date.now();
     showReader(crumb("Công cụ","cong-cu",t.name)+'<div class="r-date">'+esc(t.tag)+'</div><h1>'+esc(t.name)+'</h1><p class="r-lead">'+esc(t.desc)+'</p>'+
@@ -512,7 +495,12 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
       viewNote('văn bản này')+
       '<iframe id="'+id+'" class="doc-frame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" title="'+esc(d.name)+'"></iframe>'+
       '<span class="backlink" data-nav="van-ban">'+backSVG+' Về danh sách văn bản</span>',true);
-    var f=$("#"+id); if(f){f.srcdoc=d.html; mountDocFrame(f);}
+    var f=$("#"+id);
+    if(f){
+      if(_docBlobUrl){try{URL.revokeObjectURL(_docBlobUrl);}catch(e){}_docBlobUrl=null;}
+      try{_docBlobUrl=URL.createObjectURL(new Blob([d.html],{type:"text/html"}));f.src=_docBlobUrl;}
+      catch(e){f.srcdoc=d.html;}
+    }
   }
   function route(){
     var h=(location.hash||"").replace(/^#/,""),p=h.split("/");
@@ -619,6 +607,25 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
     row("Tiêu đề SEO (thẻ title)","seoTitle",2);
     row("Mô tả SEO (meta description)","seoDesc",3);
     row("Địa chỉ web (canonical)","siteUrl",0,"vd https://thongke.huydata.vn/");
+    /* Đổi mã PIN quản trị */
+    var pinWrap=fldEl(""); pinWrap.style.cssText="margin-top:18px;padding-top:16px;border-top:1px solid var(--line)";
+    var pinToggle=document.createElement("button"); pinToggle.type="button"; pinToggle.className="abtn alt"; pinToggle.textContent=(state.settings.pinHash?"🔒 Đổi mã PIN quản trị":"🔒 Đặt mã PIN quản trị");
+    pinWrap.appendChild(pinToggle);
+    var pinForm=document.createElement("div"); pinForm.style.cssText="display:none;margin-top:12px";
+    function pinInput(ph){var i=document.createElement("input");i.type="password";i.inputMode="numeric";i.autocomplete="new-password";i.placeholder=ph;i.style.cssText="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;margin-bottom:8px";return i;}
+    var np1=pinInput("Mã PIN mới (ít nhất 4 ký tự)"), np2=pinInput("Nhập lại mã PIN mới");
+    var pinErr=document.createElement("div"); pinErr.className="err"; pinErr.style.marginBottom="8px";
+    var pinSave=document.createElement("button"); pinSave.type="button"; pinSave.className="abtn"; pinSave.textContent="Lưu mã PIN";
+    pinForm.appendChild(np1);pinForm.appendChild(np2);pinForm.appendChild(pinErr);pinForm.appendChild(pinSave);
+    pinWrap.appendChild(pinForm);
+    pinToggle.onclick=function(){pinForm.style.display=(pinForm.style.display==="none")?"block":"none";pinErr.textContent="";};
+    pinSave.onclick=function(){
+      var a=(np1.value||"").trim(), c=(np2.value||"").trim();
+      if(a.length<4){pinErr.textContent="Mã PIN nên từ 4 ký tự trở lên.";return;}
+      if(a!==c){pinErr.textContent="Hai lần nhập chưa khớp.";return;}
+      sha256(a).then(function(h){state.settings.pinHash=h;persist();np1.value="";np2.value="";pinErr.textContent="";pinForm.style.display="none";toast("Đã đổi mã PIN. Bấm tab “Đăng” → “Đăng lên GitHub” để lưu lên web.");});
+    };
+    b.appendChild(pinWrap);
   }
 
   function renderTabIntro(b){
