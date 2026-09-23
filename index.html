@@ -522,7 +522,7 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
   function renderTool(slug){var t=byslug(state.tools,slug);if(!t){showPage();return;}
     var id="tf-"+Date.now();
     showReader(rbar("cong-cu","Công cụ",t.tag,t.name)+
-      '<iframe id="'+id+'" class="tool-frame" sandbox="allow-scripts allow-popups allow-forms" title="'+esc(t.name)+'"></iframe>',true);
+      '<iframe id="'+id+'" class="tool-frame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads" title="'+esc(t.name)+'"></iframe>',true);
     var f=$("#"+id); if(f)f.srcdoc=t.html;
   }
   function renderPost(slug){var p=byslug(state.posts,slug);if(!p){showPage();return;}
