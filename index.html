@@ -137,6 +137,7 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
 #reader{display:none;padding:16px 0 18px}
 #reader.on{display:block}
 #page.hidden{display:none}
+#reader.wide.on ~ .sf{display:none}
 .bc{font-size:13px;color:var(--text-light);padding:0 0 4px}.bc a{color:var(--text-light);cursor:pointer}.bc span{opacity:.5;margin:0 6px}
 .r-date{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal);font-weight:600;margin:22px 0 10px}
 #reader h1{font-family:var(--serif);font-weight:500;font-size:clamp(28px,5vw,44px);line-height:1.14;color:var(--green-deep)}
@@ -417,6 +418,7 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
     base=seedFromStore(base);
     var draft=lsGet(LS_CONTENT);
     if(draft){try{var d=JSON.parse(draft); if(d&&d.settings)base=d;}catch(e){}}
+    base.settings=base.settings||{}; base.posts=base.posts||[]; base.tools=base.tools||[]; base.docs=base.docs||[]; base.surveys=base.surveys||[];
     return base;
   }
   function persist(){lsSet(LS_CONTENT,JSON.stringify(state));}
@@ -475,8 +477,9 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
   }
   function renderSurveys(){
     var g=$("#dieu-tra-grid"); if(!g)return; g.innerHTML="";
-    if(!state.surveys.length){g.innerHTML='<p class="empty">Chưa có cuộc điều tra nào.</p>';return;}
-    state.surveys.forEach(function(s){
+    var arr=state.surveys||[];
+    if(!arr.length){g.innerHTML='<p class="empty">Chưa có cuộc điều tra nào.</p>';return;}
+    arr.forEach(function(s){
       var a=document.createElement("a"); a.className="card"; a.href="#dieu-tra/"+s.slug;
       a.innerHTML=(s.tag?'<div class="tag">'+esc(s.tag)+'</div>':'')+'<h3>'+esc(s.name)+'</h3><p>'+esc(s.desc)+'</p><span class="more">Xem chi tiết '+arrowSVG+'</span>';
       g.appendChild(a);
@@ -484,6 +487,7 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
   }
   function fillMenu(id,arr,base,nameKey,subKey,allLabel){
     var el=$("#"+id); if(!el)return;
+    arr=arr||[];
     var h="";
     if(!arr.length){h='<div class="dd-empty">Chưa có mục nào.</div>';}
     else{arr.forEach(function(it){h+='<a href="#'+base+'/'+it.slug+'">'+esc(it[nameKey])+(subKey&&it[subKey]?'<small>'+esc(it[subKey])+'</small>':'')+'</a>';});}
@@ -701,7 +705,7 @@ section.block{padding:56px 0;border-bottom:1px solid var(--line)}
   }
 
   function renderTabList(b,type){
-    var cfg=TYPES[type], arr=state[type];
+    var cfg=TYPES[type], arr=state[type]||(state[type]=[]);
     if(!arr.length){var e=document.createElement("p");e.className="empty";e.textContent="Chưa có "+cfg.label+" nào.";b.appendChild(e);}
     arr.forEach(function(it,i){
       var d=document.createElement("div");d.className="li-item";
