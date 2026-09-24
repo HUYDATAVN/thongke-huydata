@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bộ Prompt Thống Kê &amp; Hành Chính · HuyData</title>
+<style>
+  :root{
+    --ink:#15201c; --soft:#4c5a54; --paper:#f4f2ea; --card:#ffffff;
+    --line:#e0e0d6; --rule:#cdd3c8;
+    --green:#15695b; --green-d:#0d4a40; --green-l:#e2efeb;
+    --amber:#a96a0c; --amber-bg:#fef3da; --amber-line:#e6c277;
+    --rust:#9a3a2c; --rust-bg:#fbe9e4;
+    --ink-blue:#2f4858;
+    --shadow:0 1px 2px rgba(21,32,28,.06),0 10px 28px rgba(21,32,28,.07);
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:'Iowan Old Style','Palatino Linotype','Noto Serif',Georgia,serif;line-height:1.55;
+    -webkit-font-smoothing:antialiased}
+  .sans{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif}
+  a{color:var(--green-d)}
+
+  header.top{position:sticky;top:0;z-index:50;background:var(--green-d);color:#e9f3f0;border-bottom:3px solid var(--amber)}
+  .top-inner{max-width:1240px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:9px;font-family:'Inter',sans-serif}
+  .brand b{font-size:20px;font-weight:800;letter-spacing:.3px}
+  .brand span{font-size:11px;opacity:.78;letter-spacing:2px;text-transform:uppercase}
+  .top .sub{font-size:12.5px;opacity:.85;font-family:'Inter',sans-serif}
+  .top .spacer{flex:1}
+  .search{display:flex;align-items:center;gap:8px;background:#0a4339;border:1px solid #135f53;border-radius:10px;padding:8px 12px;min-width:240px;flex:1;max-width:400px}
+  .search input{background:transparent;border:0;outline:0;color:#e9f3f0;font-size:14px;width:100%;font-family:'Inter',sans-serif}
+  .search input::placeholder{color:#8fbcb2}
+  .search svg{flex:none;opacity:.7}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+  .layout{display:grid;grid-template-columns:240px 1fr;gap:28px;padding:24px 0 80px}
+  aside{position:sticky;top:82px;align-self:start;max-height:calc(100vh-104px);overflow:auto}
+  .nav-title{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soft);margin:4px 0 9px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:10px;text-decoration:none;color:var(--ink);font-family:'Inter',sans-serif;font-size:13.5px;border:1px solid transparent;margin-bottom:2px;cursor:pointer}
+  .nav a:hover{background:#fff;border-color:var(--line)}
+  .nav a.active{background:var(--green-l);border-color:#bcdcd5;color:var(--green-d);font-weight:600}
+  .nav .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .nav .count{margin-left:auto;font-size:11px;color:var(--soft);background:#eef1ec;border-radius:20px;padding:1px 8px}
+  .nav a.active .count{background:#cfe5df;color:var(--green-d)}
+
+  /* cây thư mục */
+  .tree-grp{margin-bottom:2px}
+  .tree-head{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13.5px;border:1px solid transparent;color:var(--ink)}
+  .tree-head:hover{background:#fff;border-color:var(--line)}
+  .tree-head.cur{background:var(--green-l);border-color:#bcdcd5;color:var(--green-d);font-weight:600}
+  .tree-head .caret{flex:none;transition:transform .18s;color:var(--soft)}
+  .tree-grp.open .caret{transform:rotate(90deg)}
+  .tree-head .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .tree-head .tname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tree-head .count{font-size:10.5px;color:var(--soft);background:#eef1ec;border-radius:20px;padding:1px 7px}
+  .tree-grp.open .tree-head.cur .count{background:#cfe5df;color:var(--green-d)}
+  .tree-kids{display:none;margin:2px 0 4px 0;padding-left:18px;border-left:1.5px solid var(--line);margin-left:14px}
+  .tree-grp.open .tree-kids{display:block}
+  .tree-kids a{display:block;padding:5px 9px;border-radius:7px;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--soft);text-decoration:none;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tree-kids a:hover{background:#fff;color:var(--ink)}
+  .tree-kids a.cur{color:var(--green-d);background:var(--green-l);font-weight:600}
+  .tree-kids a .star-mini{color:var(--amber);font-size:10px}
+
+  .hero{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px 22px;margin-bottom:22px}
+  .hero h1{margin:0 0 4px;font-size:24px;letter-spacing:-.2px}
+  .hero .lead{margin:0 0 14px;color:var(--soft);font-size:14.5px;font-family:'Inter',sans-serif;max-width:74ch}
+  .hero .lead b{color:var(--ink)}
+  .vars-head{display:flex;align-items:center;gap:10px;margin:4px 0 11px;flex-wrap:wrap}
+  .vars-head h2{font-family:'Inter',sans-serif;font-size:12.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-blue);margin:0}
+  .vars-head .hint{font-family:'Inter',sans-serif;font-size:12.5px;color:var(--soft)}
+  .badge-amber{background:var(--amber-bg);border:1px solid var(--amber-line);color:var(--amber);font-family:'Inter',sans-serif;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px}
+  .vargrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:11px}
+  .vfield label{display:block;font-family:'Inter',sans-serif;font-size:11.5px;color:var(--soft);margin-bottom:4px}
+  .vfield label code{background:var(--amber-bg);color:var(--amber);padding:1px 5px;border-radius:4px;font-size:10.5px}
+  .vfield input{width:100%;border:1.5px solid var(--amber-line);background:#fffdf6;border-radius:9px;padding:8px 10px;font-size:13.5px;font-family:'Inter',sans-serif;color:var(--ink);outline:0}
+  .vfield input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-bg)}
+  .vfield input.filled{border-color:#9fc6bd;background:#fff}
+  .vars-actions{display:flex;gap:10px;margin-top:13px;flex-wrap:wrap;align-items:center}
+
+  .btn{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;border-radius:9px;padding:8px 13px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:transform .05s}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+  .btn.primary:hover{background:var(--green-d)}
+  .btn.ghost:hover{background:#eef1ec}
+  .btn.docx{background:var(--ink-blue);border-color:var(--ink-blue);color:#fff}
+  .btn.docx:hover{background:#24323d}
+
+  .group{margin-bottom:32px;scroll-margin-top:80px}
+  .group-head{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding-bottom:10px;border-bottom:2px solid var(--rule)}
+  .group-head .gnum{font-family:'Inter',sans-serif;font-weight:800;font-size:13px;color:#fff;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:none}
+  .group-head h2{margin:0;font-size:20px;letter-spacing:-.2px}
+  .group-head p{margin:0;font-family:'Inter',sans-serif;font-size:13px;color:var(--soft)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:15px;overflow:hidden}
+  .card-head{display:flex;align-items:flex-start;gap:11px;padding:15px 17px 11px;cursor:pointer}
+  .card-head .title{flex:1}
+  .card-head h3{margin:0 0 3px;font-size:16.5px;letter-spacing:-.1px}
+  .card-head .desc{margin:0;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--soft)}
+  .tagrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .tag{font-family:'Inter',sans-serif;font-size:10.5px;border-radius:20px;padding:2px 9px;border:1px solid var(--line);color:var(--soft);background:#fafbf9}
+  .tag.chart{color:var(--green-d);border-color:#bcdcd5;background:var(--green-l)}
+  .tag.outline{color:var(--rust);border-color:#e6b6ad;background:var(--rust-bg)}
+  .tag.docx{color:var(--ink-blue);border-color:#b9c6cf;background:#eef3f6}
+  .chev{flex:none;transition:transform .2s;color:var(--soft);margin-top:3px}
+  .card.open .chev{transform:rotate(90deg)}
+  .star{flex:none;cursor:pointer;color:#c8ccc4;margin-top:2px}
+  .star.on{color:var(--amber)}
+
+  .card-body{display:none;border-top:1px dashed var(--line);padding:13px 17px 17px;background:#fcfcfa}
+  .card.open .card-body{display:block}
+  .ptext{font-family:'Inter',sans-serif;font-size:13px;line-height:1.62;color:#1f2e29;white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+  .ptext .v{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-line);border-radius:5px;padding:0 5px;font-weight:600;font-family:'Inter',sans-serif;white-space:nowrap}
+  .ptext .v.set{background:var(--green-l);color:var(--green-d);border-color:#bcdcd5}
+  .card-actions{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;align-items:center}
+  .copied{font-family:'Inter',sans-serif;font-size:12px;color:var(--green-d);font-weight:600;opacity:0;transition:opacity .2s}
+  .copied.show{opacity:1}
+  .miss{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--amber);margin-left:auto}
+
+  .empty{text-align:center;padding:54px 20px;color:var(--soft);font-family:'Inter',sans-serif}
+  footer{border-top:1px solid var(--line);background:#fff;padding:20px 0;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--soft)}
+  footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+  footer b{color:var(--ink)}
+  footer a{text-decoration:none}
+
+  @media(max-width:880px){
+    .layout{grid-template-columns:1fr}
+    aside{position:static;max-height:none;overflow:visible;order:2}
+    .nav{display:flex;flex-wrap:wrap;gap:6px}.nav a{margin:0}.nav .nav-title{width:100%}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><b>HuyData</b><span>Prompt Kit Basic </span></div>
+    <div class="sub">Thống kê · Báo cáo · Văn phòng · Nghiên cứu · Excel/SQL</div>
+    <div class="spacer"></div>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="text" placeholder="Tìm prompt theo từ khoá…" autocomplete="off">
+    </div>
+  </div>
+</header>
+
+<div class="wrap"><div class="layout">
+  <aside>
+    <div class="nav-title">Mục lục prompt</div>
+    <div id="tree"></div>
+    <div class="nav-title" style="margin-top:16px">Lọc nhanh</div>
+    <nav class="nav">
+      <a id="filt-star"><span class="dot" style="background:var(--amber)"></span>Đã đánh dấu<span class="count" id="cnt-star">0</span></a>
+      <a id="filt-docx"><span class="dot" style="background:var(--ink-blue)"></span>Xuất được .docx<span class="count" id="cnt-docx">0</span></a>
+      <a id="filt-chart"><span class="dot" style="background:var(--green)"></span>Kèm biểu số liệu<span class="count" id="cnt-chart">0</span></a>
+      <a id="filt-all" class="active"><span class="dot" style="background:var(--ink-blue)"></span>Tất cả<span class="count" id="cnt-all">0</span></a>
+    </nav>
+    <div class="nav-title" style="margin-top:16px">Mẫu văn bản</div>
+    <nav class="nav">
+      <a id="dl-totrinh"><span class="dot" style="background:var(--rust)"></span>Tải khung Tờ trình .docx</a>
+      <a id="dl-baocao"><span class="dot" style="background:var(--green)"></span>Tải khung Báo cáo .docx</a>
+    </nav>
+  </aside>
+
+  <main id="main">
+    <section class="hero">
+      <h1>Bộ prompt thống kê &amp; hành chính dùng ngay</h1>
+      <p class="lead">Điền thông tin chung một lần. Mọi <span class="badge-amber">biến</span> trong prompt tự thay bằng giá trị của bạn khi bấm <b>Sao chép</b>. Các prompt văn bản đều bám <b>thể thức Nghị định 30/2020/NĐ-CP</b> (Bộ Nội vụ) và có thể yêu cầu AI xuất kết cấu chuẩn để dán vào Word. Mặc định địa bàn là <b>tỉnh Vĩnh Long</b> (hợp nhất Bến Tre – Trà Vinh – Vĩnh Long từ 01/7/2025), bạn sửa lại nếu cần.</p>
+      <div class="vars-head">
+        <h2>Thông tin chung</h2><span class="hint">— dùng lại cho mọi prompt, lưu trên máy bạn</span>
+      </div>
+      <div class="vargrid" id="vargrid"></div>
+      <div class="vars-actions">
+        <button class="btn ghost" id="resetVars">Khôi phục mặc định</button>
+        <button class="btn ghost" id="clearVars">Xoá hết</button>
+        <span class="copied" id="varSaved">Đã lưu</span>
+      </div>
+    </section>
+    <div id="groups"></div>
+    <div class="empty" id="empty" style="display:none">Không tìm thấy prompt nào khớp từ khoá.</div>
+  </main>
+</div></div>
+
+<footer><div class="wrap">
+  <span>Bộ prompt do <b>HuyData</b> biên soạn · chạy offline, không cần mạng · dữ liệu chỉ lưu trên máy bạn.</span>
+  <span>HuyData · <a href="mailto:huydatavlo@gmail.com">huydatavlo@gmail.com</a> · <a href="tel:0944772979">0944 772 979</a> · <span id="total"></span></span>
+</div></footer>
+
+<script>
+/* ============ BIẾN CHUNG (có giá trị mặc định) ============ */
+const VARS = [
+  {k:"ten_bao_cao",   label:"Tên báo cáo / văn bản",  ph:"VD: Tình hình KT-XH 6 tháng đầu năm", def:""},
+  {k:"ky_bao_cao",    label:"Kỳ / thời điểm",         ph:"VD: 6 tháng đầu năm 2026", def:""},
+  {k:"don_vi",        label:"Địa bàn / cấp hành chính", ph:"VD: tỉnh Vĩnh Long", def:"tỉnh Vĩnh Long"},
+  {k:"co_quan",       label:"Cơ quan ban hành",       ph:"VD:Thống kê tỉnh Vĩnh Long", def:""},
+  {k:"linh_vuc",      label:"Lĩnh vực",               ph:"VD: dân số, kinh tế, lao động…", def:""},
+  {k:"nguon_du_lieu", label:"Nguồn dữ liệu",          ph:"VD: kết quả điều tra DTDS giữa kỳ", def:""},
+  {k:"noi_nhan",      label:"Nơi nhận (Kính gửi)",    ph:"VD: Ban lãnh dạo Thống kê tỉnh Vĩnh Long", def:""},
+  {k:"doi_tuong",     label:"Đối tượng đọc",          ph:"VD: lãnh đạo tỉnh", def:""},
+];
+
+/* Khối nhắc chuẩn, gắn vào nhiều prompt */
+const ANTI = `\n\nNGUYÊN TẮC BẮT BUỘC (chống bịa số liệu):
+- Chỉ dùng đúng số liệu tôi cung cấp; KHÔNG tự tạo, suy đoán hay làm tròn sai con số.
+- Nếu thiếu dữ liệu cho một ý, ghi rõ "[cần bổ sung số liệu]" thay vì tự điền.
+- Mọi nhận định phải gắn với con số cụ thể có trong dữ liệu.
+- Không trích dẫn văn bản pháp luật, số hiệu nghị định, ngày tháng nếu tôi không cung cấp; nếu cần viện dẫn, ghi "[kiểm tra căn cứ pháp lý]".`;
+
+const NĐ30 = `\n\nTHỂ THỨC: Trình bày đúng Nghị định 30/2020/NĐ-CP — Quốc hiệu "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM" và tiêu ngữ "Độc lập - Tự do - Hạnh phúc"; tên cơ quan ban hành; số/ký hiệu; địa danh, ngày tháng; tên loại và trích yếu; phần căn cứ trình bày in nghiêng (nếu có); nội dung; quyền hạn - chức vụ người ký; nơi nhận. Bố cục nội dung theo phần/mục/khoản/điểm khi cần.`;
+
+const DOCX = `\n\nĐỊNH DẠNG XUẤT: Trình bày kết quả thành kết cấu rõ ràng có tiêu đề các cấp (Heading 1/2/3), đoạn văn và bảng biểu, để tôi dán thẳng vào Microsoft Word giữ nguyên cấu trúc. Dùng bảng cho số liệu, không dùng ký tự gạch đầu dòng thủ công.`;
+
+/* ============ BỘ PROMPT ============ */
+const GROUPS = [
+{ id:"baocao", name:"Báo cáo thống kê", color:"#15695b",
+  desc:"Dựng đề cương, viết, thuyết minh và hoàn thiện báo cáo — nhóm ưu tiên cao nhất.",
+  prompts:[
+  { id:"bc-decuong", title:"Dựng đề cương báo cáo (khi chưa có đề cương)", chart:false, outline:true, docx:true,
+    tags:["khung báo cáo","đề cương"],
+    body:`Bạn là chuyên gia biên soạn báo cáo thống kê nhà nước. Hãy lập ĐỀ CƯƠNG CHI TIẾT cho báo cáo "{{ten_bao_cao}}", kỳ {{ky_bao_cao}}, địa bàn {{don_vi}}, lĩnh vực {{linh_vuc}}.
+
+Yêu cầu:
+1. Bố cục chuẩn báo cáo thống kê: mở đầu, các phần nội dung chính, đánh giá chung, kiến nghị.
+2. Mỗi mục nêu: nội dung trình bày, chỉ tiêu/số liệu cần có, biểu số liệu đi kèm (nếu cần).
+3. Gợi ý nguồn số liệu cho từng mục dựa trên {{nguon_du_lieu}}.
+4. Trình bày dạng mục lục đánh số (1, 1.1, 1.2…), ngắn gọn, dễ giao việc.
+Văn phong hành chính - thống kê, hướng tới {{doi_tuong}}.`+DOCX },
+
+  { id:"bc-theodecuong", title:"Viết báo cáo theo đề cương có sẵn", chart:true, outline:true, docx:true,
+    tags:["có đề cương","kèm biểu"],
+    body:`Bạn là chuyên gia biên soạn báo cáo thống kê. Hãy viết hoàn chỉnh báo cáo "{{ten_bao_cao}}" kỳ {{ky_bao_cao}} cho {{don_vi}}, BÁM SÁT đề cương và số liệu dưới đây.
+
+[DÁN ĐỀ CƯƠNG]
+
+[DÁN SỐ LIỆU / BẢNG]
+
+Yêu cầu:
+1. Viết đúng thứ tự, đúng số mục của đề cương; không thêm bớt mục.
+2. Mỗi nhận định gắn với con số cụ thể; nêu rõ tăng/giảm, mức và tỷ lệ so với kỳ trước và cùng kỳ năm trước khi dữ liệu cho phép.
+3. Ở mỗi phần có số liệu, đề xuất 1 biểu đồ phù hợp (cột/đường/tròn) kèm tiêu đề và mô tả ngắn.
+4. Kết thúc bằng đánh giá chung và kiến nghị. Văn phong hành chính, hướng tới {{doi_tuong}}.`+ANTI+DOCX },
+
+  { id:"bc-khongdecuong", title:"Viết báo cáo khi KHÔNG có đề cương", chart:true, outline:false, docx:true,
+    tags:["không đề cương","tự bố cục","kèm biểu"],
+    body:`Bạn là chuyên gia thống kê. Tôi chưa có đề cương. Hãy TỰ ĐỀ XUẤT bố cục hợp lý rồi viết báo cáo "{{ten_bao_cao}}" kỳ {{ky_bao_cao}} cho {{don_vi}}, lĩnh vực {{linh_vuc}}, từ số liệu dưới đây.
+
+[DÁN SỐ LIỆU]
+
+Yêu cầu:
+1. Nêu bố cục đề xuất (mục lục ngắn) để tôi duyệt nhanh, rồi viết nội dung đầy đủ.
+2. So sánh theo thời gian và theo cơ cấu; chỉ ra điểm nổi bật, bất thường, xu hướng.
+3. Đề xuất biểu số liệu cho từng phần (loại biểu + tiêu đề + nội dung thể hiện).
+4. Có đánh giá chung và kiến nghị. Phù hợp {{doi_tuong}}.`+ANTI+DOCX },
+
+  { id:"bc-thuyetminh", title:"Viết lời bình cho bảng / biểu số liệu", chart:true, outline:false, docx:false,
+    tags:["thuyết minh","kèm biểu"],
+    body:`Bạn là chuyên gia phân tích thống kê. Hãy viết phần THUYẾT MINH cho bảng số liệu sau, dùng trong báo cáo "{{ten_bao_cao}}".
+
+[DÁN BẢNG SỐ LIỆU]
+
+Yêu cầu:
+1. Viết 2–4 đoạn nhận xét: con số tổng quát, cơ cấu, biến động so với kỳ trước/cùng kỳ, điểm bất thường.
+2. Mỗi câu gắn với số liệu cụ thể trong bảng; tránh đọc lại nguyên con số, tập trung vào ý nghĩa.
+3. Gợi ý 1–2 biểu đồ thể hiện bảng này hiệu quả nhất (loại + trục + lý do).
+Văn phong thống kê, súc tích, cho {{doi_tuong}}.`+ANTI },
+
+  { id:"bc-tomtat", title:"Tóm tắt báo cáo cho lãnh đạo (1 trang)", chart:false, outline:false, docx:true,
+    tags:["tóm tắt","điều hành"],
+    body:`Bạn là trợ lý phân tích cho lãnh đạo. Hãy tóm tắt báo cáo dưới đây thành bản 1 trang cho {{doi_tuong}}.
+
+[DÁN BÁO CÁO ĐẦY ĐỦ]
+
+Yêu cầu:
+1. Tối đa 5–7 ý chính, mỗi ý 1–2 câu kèm con số then chốt.
+2. Nêu rõ: kết quả nổi bật, vấn đề/rủi ro, 2–3 kiến nghị hành động.
+3. Bỏ chi tiết kỹ thuật, giữ điều lãnh đạo cần để ra quyết định.`+ANTI },
+
+  { id:"bc-rasoat", title:"Rà soát & biên tập báo cáo đã viết", chart:false, outline:false, docx:false,
+    tags:["biên tập","kiểm tra số"],
+    body:`Bạn là biên tập viên báo cáo thống kê khó tính. Hãy rà soát bản thảo "{{ten_bao_cao}}" dưới đây.
+
+[DÁN BẢN THẢO]
+
+Liệt kê theo nhóm:
+1. Số liệu: chỗ mâu thuẫn, tổng không khớp thành phần, tỷ lệ % sai, đơn vị lẫn lộn.
+2. Lập luận: nhận định nào không có số liệu đỡ, hoặc suy diễn quá mức.
+3. Văn phong hành chính: câu tối nghĩa, từ thừa, lỗi thể thức.
+4. Đề xuất bản sửa cho từng lỗi quan trọng.
+Trình bày: lỗi → vị trí → cách sửa. Không viết lại toàn bộ trừ khi tôi yêu cầu.` },
+
+  { id:"bc-tungphan", title:"Viết từng phần báo cáo dài (10–20 trang)", chart:true, outline:true, docx:true,
+    tags:["báo cáo dài","viết từng phần","kèm biểu"],
+    body:`Bạn là chuyên gia biên soạn báo cáo thống kê. Tôi đang viết báo cáo dài "{{ten_bao_cao}}" theo từng phần để giữ chất lượng và độ chính xác. Hãy viết CHỈ PHẦN tôi yêu cầu dưới đây, không viết các phần khác.
+
+Phần cần viết lần này: [VD: "Phần II - Kết quả lĩnh vực dân số"]
+Vai trò của phần này trong toàn báo cáo: [1 câu ngữ cảnh, để viết cho liền mạch]
+Đề cương chi tiết của riêng phần này:
+[DÁN ĐỀ CƯƠNG PHẦN NÀY]
+Số liệu của riêng phần này:
+[DÁN SỐ LIỆU PHẦN NÀY]
+
+Yêu cầu:
+1. Viết sâu, đủ ý cho 2–4 trang; đúng các mục con của đề cương phần này.
+2. Mỗi nhận định gắn con số cụ thể; nêu cơ cấu và so sánh khi dữ liệu cho phép.
+3. Đề xuất biểu đồ cho từng mục có số liệu.
+4. Mở đầu phần bằng 1–2 câu dẫn dắt, kết phần bằng 1 câu chốt ý, để dễ ghép với phần trước/sau.
+5. Giữ thuật ngữ và cách gọi chỉ tiêu NHẤT QUÁN để khớp các phần khác.
+Hướng tới {{doi_tuong}}.`+ANTI+DOCX },
+
+  { id:"bc-ghepnoi", title:"Ghép nối & làm mượt báo cáo dài", chart:false, outline:false, docx:true,
+    tags:["báo cáo dài","ghép nối","nhất quán"],
+    body:`Bạn là biên tập viên báo cáo thống kê. Tôi đã viết báo cáo dài "{{ten_bao_cao}}" theo từng phần rời. Hãy GHÉP NỐI và làm mượt thành một bản liền mạch, KHÔNG thay đổi số liệu.
+
+[DÁN LẦN LƯỢT CÁC PHẦN ĐÃ VIẾT]
+
+Yêu cầu:
+1. Rà soát mạch chuyển giữa các phần; thêm câu chuyển cho liền mạch, bỏ chỗ trùng lặp ý.
+2. Thống nhất thuật ngữ, cách gọi chỉ tiêu, đơn vị đo, cách viết số/ngày trên toàn bài.
+3. Viết phần Mở đầu (giới thiệu chung) và Đánh giá chung – Kiến nghị tổng hợp ăn khớp với nội dung các phần.
+4. KHÔNG sửa, không thêm, không bịa con số; nếu phát hiện số liệu mâu thuẫn giữa các phần, liệt kê riêng ở cuối dưới mục "Cảnh báo cần kiểm tra", không tự ý chỉnh.
+5. Giữ kết cấu tiêu đề các cấp để dán vào Word.
+Hướng tới {{doi_tuong}}.`+ANTI+DOCX },
+
+  { id:"bc-nhatquan", title:"Kiểm tra tính nhất quán toàn báo cáo", chart:false, outline:false, docx:false,
+    tags:["báo cáo dài","kiểm tra","nhất quán"],
+    body:`Bạn là người soát lỗi cuối cùng cho báo cáo dài "{{ten_bao_cao}}". Hãy kiểm tra TÍNH NHẤT QUÁN trên toàn bộ bản thảo dưới đây. Chỉ rà soát, KHÔNG viết lại.
+
+[DÁN TOÀN BỘ BÁO CÁO]
+
+Kiểm tra và liệt kê theo nhóm:
+1. Số liệu: cùng một chỉ tiêu có bị ghi khác nhau ở các phần không; tổng có khớp các thành phần không; số trong phần lời bình có khớp số trong bảng/biểu không.
+2. Thuật ngữ & đơn vị: tên chỉ tiêu, đơn vị đo, cách viết số thập phân/phần trăm/ngày tháng có đồng nhất không.
+3. Cấu trúc: đánh số mục có liên tục, không trùng/nhảy cóc; có mục nào nêu trong đề cương mà thiếu nội dung không.
+4. Tham chiếu: chỗ nào viết "như đã nêu ở phần…", "xem Biểu…" có trỏ đúng không.
+5. Lập luận: kết luận tổng ở cuối có mâu thuẫn với số liệu trong thân bài không.
+Trình bày: vấn đề → vị trí (phần/mục) → đề xuất xử lý. Ưu tiên các mâu thuẫn về SỐ LIỆU lên đầu.`+ANTI }
+  ]
+},
+
+{ id:"dieutra", name:"Báo cáo kết quả điều tra", color:"#15695b",
+  desc:"Soạn báo cáo công bố kết quả từ một cuộc điều tra/khảo sát thống kê — từ phương án đến công bố.",
+  prompts:[
+  { id:"dt-decuong", title:"Đề cương báo cáo kết quả điều tra", chart:false, outline:true, docx:true,
+    tags:["điều tra","đề cương"],
+    body:`Bạn là chuyên gia biên soạn báo cáo điều tra thống kê. Hãy lập ĐỀ CƯƠNG cho báo cáo kết quả cuộc điều tra "{{ten_bao_cao}}", kỳ {{ky_bao_cao}}, địa bàn {{don_vi}}, lĩnh vực {{linh_vuc}}.
+
+Yêu cầu:
+1. Bố cục chuẩn báo cáo điều tra: (I) Khái quát cuộc điều tra (mục đích, phạm vi, đối tượng, thời điểm, phương pháp thu thập, cỡ mẫu); (II) Kết quả chủ yếu theo từng chỉ tiêu/chủ đề; (III) Đánh giá chung và phát hiện nổi bật; (IV) Kết luận, kiến nghị; (Phụ lục) hệ biểu số liệu.
+2. Mỗi mục nêu: chỉ tiêu cần trình bày, biểu số liệu đi kèm, nguồn từ {{nguon_du_lieu}}.
+3. Mục lục đánh số, ngắn gọn, dễ giao việc.
+Hướng tới {{doi_tuong}}.`+DOCX },
+
+  { id:"dt-phuongan", title:"Mô tả phương án & phương pháp điều tra", chart:false, outline:false, docx:true,
+    tags:["phương án","phương pháp"],
+    body:`Bạn là chuyên gia phương pháp luận điều tra thống kê. Hãy viết phần MÔ TẢ CUỘC ĐIỀU TRA cho báo cáo "{{ten_bao_cao}}" của {{don_vi}}.
+
+[DÁN THÔNG TIN: mục đích, đối tượng, đơn vị điều tra, phạm vi, thời điểm/thời kỳ, phương pháp thu thập, cỡ mẫu, cách chọn mẫu, quyền số…]
+
+Yêu cầu:
+1. Trình bày mạch lạc: mục đích – phạm vi – đối tượng/đơn vị điều tra – thời điểm – phương pháp thu thập – thiết kế mẫu – phương pháp suy rộng.
+2. Diễn đạt theo chuẩn thuật ngữ thống kê; định nghĩa rõ chỉ tiêu chính nếu cần.
+3. Chỉ dùng thông tin tôi cấp; phần thiếu ghi "[cần bổ sung]".`+ANTI+DOCX },
+
+  { id:"dt-ketqua", title:"Viết phần kết quả điều tra (từ hệ biểu)", chart:true, outline:false, docx:true,
+    tags:["kết quả","kèm biểu"],
+    body:`Bạn là chuyên gia phân tích điều tra. Hãy viết phần KẾT QUẢ cho báo cáo "{{ten_bao_cao}}" của {{don_vi}}, từ hệ biểu số liệu dưới đây.
+
+[DÁN HỆ BIỂU / SỐ LIỆU KẾT QUẢ ĐIỀU TRA]
+
+Yêu cầu:
+1. Trình bày theo từng chỉ tiêu/chủ đề; mỗi phần nêu con số chính, cơ cấu, và so sánh (theo nhóm, theo địa bàn, theo kỳ trước nếu có).
+2. Nêu phát hiện nổi bật và điểm bất thường đáng chú ý.
+3. Mỗi phần đề xuất 1 biểu đồ phù hợp (loại + tiêu đề + nội dung thể hiện).
+4. Khi suy rộng từ mẫu, diễn đạt thận trọng (ước lượng, không tuyệt đối).
+Hướng tới {{doi_tuong}}.`+ANTI+DOCX },
+
+  { id:"dt-toanvan", title:"Viết báo cáo kết quả điều tra hoàn chỉnh", chart:true, outline:true, docx:true,
+    tags:["toàn văn","kèm biểu"],
+    body:`Bạn là chuyên gia biên soạn báo cáo điều tra thống kê. Hãy viết HOÀN CHỈNH báo cáo kết quả cuộc điều tra "{{ten_bao_cao}}", kỳ {{ky_bao_cao}}, địa bàn {{don_vi}}, từ thông tin và số liệu dưới đây.
+
+[DÁN: thông tin cuộc điều tra + hệ biểu số liệu (+ đề cương nếu có)]
+
+Yêu cầu:
+1. Bố cục: (I) Khái quát cuộc điều tra; (II) Kết quả chủ yếu theo chỉ tiêu/chủ đề; (III) Đánh giá chung, phát hiện nổi bật; (IV) Kết luận và kiến nghị.
+2. Mỗi nhận định gắn con số cụ thể; nêu cơ cấu và so sánh khi dữ liệu cho phép.
+3. Đề xuất biểu đồ cho từng phần kết quả.
+4. Nêu rõ giới hạn (sai số mẫu, phạm vi, tỷ lệ trả lời) nếu có thông tin.
+Văn phong thống kê khách quan, hướng tới {{doi_tuong}}.`+ANTI+DOCX },
+
+  { id:"dt-thongcao", title:"Thông cáo / bản tin công bố kết quả (ngắn gọn)", chart:false, outline:false, docx:true,
+    tags:["thông cáo","công bố"],
+    body:`Bạn là người soạn thông cáo thống kê. Hãy viết BẢN TIN/THÔNG CÁO công bố kết quả cuộc điều tra "{{ten_bao_cao}}" của {{don_vi}}, dành cho công chúng và báo chí.
+
+[DÁN CÁC SỐ LIỆU CHÍNH CẦN CÔNG BỐ]
+
+Yêu cầu:
+1. Mở đầu nêu cuộc điều tra là gì, do ai thực hiện, kỳ nào.
+2. Nêu 4–6 kết quả chính bằng con số rõ ràng, dễ hiểu cho người không chuyên.
+3. Một đoạn nhận định ngắn về ý nghĩa; tránh thuật ngữ nặng.
+4. Trung thực với số liệu; không phóng đại, không thêm con số ngoài dữ liệu.`+ANTI+DOCX },
+
+  { id:"dt-chatluong", title:"Đánh giá chất lượng cuộc điều tra", chart:false, outline:false, docx:false,
+    tags:["chất lượng","sai số"],
+    body:`Bạn là chuyên gia đánh giá chất lượng điều tra thống kê. Hãy đánh giá chất lượng cuộc điều tra "{{ten_bao_cao}}" của {{don_vi}}.
+
+[DÁN: cỡ mẫu thiết kế & thực hiện, tỷ lệ trả lời, tỷ lệ thiếu dữ liệu, ghi chú thực địa…]
+
+Yêu cầu:
+1. Đánh giá độ bao phủ, tỷ lệ trả lời và ảnh hưởng của không trả lời.
+2. Nhận diện nguồn sai số (chọn mẫu và phi chọn mẫu) có thể có.
+3. Mức độ tin cậy khi suy rộng và lưu ý khi công bố.
+4. Kiến nghị cải thiện cho kỳ điều tra sau.
+Nêu rõ giả định; chỉ dựa trên thông tin tôi cấp.`+ANTI }
+  ]
+},
+
+{ id:"vanphong", name:"Công tác văn phòng", color:"#9a3a2c",
+  desc:"Tờ trình, công văn, báo cáo công tác, kế hoạch, thông báo… theo thể thức Nghị định 30/2020/NĐ-CP.",
+  prompts:[
+  { id:"vp-totrinh", title:"Soạn Tờ trình", chart:false, outline:false, docx:true,
+    tags:["tờ trình","NĐ 30"],
+    body:`Bạn là chuyên viên văn phòng cơ quan nhà nước. Hãy soạn TỜ TRÌNH của {{co_quan}} kính gửi {{noi_nhan}} về việc dưới đây.
+
+Nội dung đề nghị: [MÔ TẢ VIỆC CẦN TRÌNH]
+Lý do / căn cứ thực tiễn: [NÊU RÕ]
+
+Yêu cầu:
+1. Cấu trúc tờ trình: đặt vấn đề (sự cần thiết) → nội dung trình → đề xuất/kiến nghị cụ thể → lời đề nghị xem xét, quyết định.
+2. Lập luận chặt chẽ, nêu rõ căn cứ thực tiễn; chỉ viện dẫn văn bản pháp lý khi tôi cung cấp.
+3. Văn phong hành chính trang trọng, ngắn gọn, đúng mực.`+NĐ30+`\n\nLưu ý: chừa trống số/ký hiệu, ngày tháng, chữ ký để tôi điền.`+DOCX },
+
+  { id:"vp-congvan", title:"Soạn Công văn (trao đổi / đề nghị / trả lời)", chart:false, outline:false, docx:true,
+    tags:["công văn","NĐ 30"],
+    body:`Bạn là chuyên viên văn phòng. Hãy soạn CÔNG VĂN của {{co_quan}} gửi {{noi_nhan}}.
+
+Loại công văn: [đề nghị / trả lời / đôn đốc / mời họp…]
+Nội dung chính cần truyền đạt: [MÔ TẢ]
+
+Yêu cầu:
+1. Mở đầu nêu lý do/căn cứ; thân bài nêu nội dung; kết nêu đề nghị cụ thể và thời hạn (nếu có).
+2. Mỗi công văn chỉ tập trung một chủ đề; văn phong rõ ràng, lịch sự, đúng mực hành chính.
+3. Trích yếu ngắn gọn dưới số/ký hiệu.`+NĐ30+DOCX },
+
+  { id:"vp-baocaocongtac", title:"Báo cáo công tác (tuần/tháng/quý/năm)", chart:false, outline:false, docx:true,
+    tags:["báo cáo công tác","tổng kết"],
+    body:`Bạn là chuyên viên tổng hợp. Hãy soạn BÁO CÁO CÔNG TÁC kỳ {{ky_bao_cao}} của {{co_quan}}, từ các đầu việc dưới đây.
+
+[DÁN DANH SÁCH CÔNG VIỆC / SỐ LIỆU ĐÃ LÀM]
+
+Yêu cầu:
+1. Bố cục: I. Kết quả thực hiện (theo lĩnh vực/nhiệm vụ); II. Tồn tại, hạn chế và nguyên nhân; III. Phương hướng kỳ tới; IV. Đề xuất, kiến nghị.
+2. Phần kết quả gắn với số liệu cụ thể đã cho; nêu mức độ hoàn thành so với kế hoạch.
+3. Văn phong hành chính, khách quan.`+ANTI+DOCX },
+
+  { id:"vp-kehoach", title:"Xây dựng Kế hoạch công tác", chart:false, outline:false, docx:true,
+    tags:["kế hoạch","triển khai"],
+    body:`Bạn là chuyên viên xây dựng kế hoạch. Hãy soạn KẾ HOẠCH triển khai cho {{co_quan}} về nội dung dưới đây.
+
+Mục tiêu / nhiệm vụ cần triển khai: [MÔ TẢ]
+Thời gian thực hiện: {{ky_bao_cao}}
+
+Yêu cầu:
+1. Bố cục: I. Mục đích, yêu cầu; II. Nội dung và nhiệm vụ cụ thể; III. Phân công thực hiện; IV. Thời gian, tiến độ; V. Tổ chức thực hiện (kinh phí, chế độ báo cáo).
+2. Nhiệm vụ rõ "ai làm – làm gì – khi nào – sản phẩm gì"; lập bảng phân công nếu phù hợp.
+3. Văn phong hành chính, khả thi, đo lường được.`+DOCX },
+
+  { id:"vp-thongbao", title:"Soạn Thông báo / Giấy mời", chart:false, outline:false, docx:true,
+    tags:["thông báo","giấy mời"],
+    body:`Bạn là chuyên viên văn phòng. Hãy soạn [THÔNG BÁO / GIẤY MỜI] của {{co_quan}} gửi {{noi_nhan}}.
+
+Nội dung / sự kiện: [MÔ TẢ: nội dung, thời gian, địa điểm, thành phần, yêu cầu chuẩn bị]
+
+Yêu cầu:
+1. Ngắn gọn, đủ thông tin then chốt; nêu rõ thời gian, địa điểm, thành phần, đề nghị cụ thể.
+2. Văn phong trang trọng, đúng thể thức.`+NĐ30+DOCX },
+
+  { id:"vp-bienban", title:"Soạn Biên bản cuộc họp", chart:false, outline:false, docx:true,
+    tags:["biên bản","cuộc họp"],
+    body:`Bạn là thư ký cuộc họp. Hãy soạn BIÊN BẢN cuộc họp của {{co_quan}} từ thông tin/ghi chú dưới đây.
+
+[DÁN GHI CHÚ NỘI DUNG HỌP]
+
+Yêu cầu:
+1. Bố cục: thời gian – địa điểm; thành phần tham dự; chủ trì, thư ký; nội dung (các ý kiến chính theo người phát biểu); kết luận; kết thúc.
+2. Ghi trung thực theo ghi chú đã cho; KHÔNG thêm ý kiến không có trong ghi chú.
+3. Văn phong khách quan, ngôi thứ ba.`+ANTI+DOCX }
+  ]
+},
+
+{ id:"kiemdinh", name:"Kiểm định dữ liệu", color:"#a96a0c",
+  desc:"Làm sạch, phát hiện lỗi, thiết kế quy tắc và kiểm tra chất lượng số liệu.",
+  prompts:[
+  { id:"kd-lamsach", title:"Phát hiện lỗi & làm sạch dữ liệu", chart:false, outline:false, docx:false,
+    tags:["data cleaning","chất lượng"],
+    body:`Bạn là chuyên gia kiểm định chất lượng dữ liệu thống kê. Hãy rà soát bộ dữ liệu {{linh_vuc}} từ {{nguon_du_lieu}} dưới đây.
+
+[DÁN DỮ LIỆU / MÔ TẢ CỘT]
+
+Kiểm tra và báo cáo:
+1. Giá trị thiếu: cột nào, bao nhiêu, có theo quy luật không.
+2. Giá trị bất thường (outlier) và giá trị vô lý (âm, vượt ngưỡng logic).
+3. Trùng lặp bản ghi; sai định dạng (ngày, mã đơn vị hành chính, đơn vị đo).
+4. Mâu thuẫn logic giữa các cột (tuổi – năm sinh, tổng ≠ thành phần).
+5. Mỗi lỗi: mức độ nghiêm trọng và cách xử lý đề xuất.
+Trình bày bảng: loại lỗi → ví dụ → số lượng ước tính → cách xử lý.`+ANTI },
+
+  { id:"kd-quytac", title:"Thiết kế bộ quy tắc kiểm định", chart:false, outline:false, docx:false,
+    tags:["validation rules","quy tắc"],
+    body:`Bạn là chuyên gia thiết kế quy tắc kiểm định dữ liệu điều tra thống kê. Cho phiếu/biểu {{linh_vuc}} với các trường mô tả dưới đây, hãy đề xuất BỘ QUY TẮC KIỂM ĐỊNH.
+
+[DÁN DANH SÁCH TRƯỜNG / CÂU HỎI]
+
+Mỗi quy tắc gồm: tên trường; loại kiểm tra (bắt buộc / miền giá trị / định dạng / kiểm tra chéo / tổng cộng); điều kiện cụ thể (diễn đạt rõ để chuyển thành công thức); mức cảnh báo (chặn hay cảnh báo); thông báo cho điều tra viên.
+Trình bày bảng, sắp theo trường; ưu tiên kiểm tra chéo thường gặp trong điều tra thống kê.` },
+
+  { id:"kd-tincay", title:"Đánh giá độ tin cậy & tính đại diện", chart:true, outline:false, docx:false,
+    tags:["sai số","mẫu","kèm biểu"],
+    body:`Bạn là chuyên gia phương pháp luận thống kê. Hãy đánh giá độ tin cậy của kết quả từ {{nguon_du_lieu}} cho {{don_vi}}.
+
+[DÁN THÔNG TIN MẪU: cỡ mẫu, cách chọn, tỷ lệ trả lời, quyền số…]
+
+Phân tích:
+1. Tính đại diện của mẫu so với tổng thể; nguy cơ sai lệch.
+2. Sai số chọn mẫu và phi chọn mẫu có thể có.
+3. Ảnh hưởng của tỷ lệ không trả lời / thiếu dữ liệu.
+4. Mức tin cậy khi suy rộng và lưu ý khi công bố.
+5. Đề xuất biểu đồ so sánh cơ cấu mẫu với tổng thể.
+Nêu rõ giả định và giới hạn; viết cho {{doi_tuong}}.`+ANTI },
+
+  { id:"kd-doichieu", title:"Đối chiếu nhất quán giữa nhiều nguồn", chart:false, outline:false, docx:false,
+    tags:["đối chiếu","nhất quán"],
+    body:`Bạn là kiểm định viên dữ liệu. Tôi có cùng chỉ tiêu {{linh_vuc}} từ nhiều nguồn cho {{don_vi}}, kỳ {{ky_bao_cao}}. Hãy đối chiếu để tìm điểm vênh.
+
+[DÁN SỐ LIỆU TỪ CÁC NGUỒN]
+
+Yêu cầu:
+1. Lập bảng so sánh chỉ tiêu giữa các nguồn, tính chênh lệch tuyệt đối và %.
+2. Đánh dấu chênh lệch vượt ngưỡng đáng chú ý.
+3. Phân tích nguyên nhân khả dĩ: khác phạm vi, khác kỳ, khác định nghĩa chỉ tiêu, sai số.
+4. Khuyến nghị nên dùng con số nào làm chuẩn công bố và vì sao.`+ANTI }
+  ]
+},
+
+{ id:"phantich", name:"Phân tích dữ liệu", color:"#2f4858",
+  desc:"Khai thác xu hướng, cơ cấu, so sánh và mối quan hệ từ số liệu.",
+  prompts:[
+  { id:"pt-mota", title:"Phân tích mô tả tổng quan", chart:true, outline:false, docx:false,
+    tags:["thống kê mô tả","kèm biểu"],
+    body:`Bạn là chuyên gia phân tích dữ liệu thống kê. Hãy phân tích mô tả bộ số liệu {{linh_vuc}} của {{don_vi}}, kỳ {{ky_bao_cao}}.
+
+[DÁN SỐ LIỆU]
+
+Yêu cầu:
+1. Thống kê mô tả chính: tổng, trung bình, trung vị, min–max, độ phân tán cho các chỉ tiêu quan trọng.
+2. Phân tích cơ cấu (tỷ trọng thành phần) và thứ hạng.
+3. Phát hiện điểm nổi bật, giá trị bất thường, nhóm dẫn đầu/cuối.
+4. Đề xuất biểu đồ cho mỗi phát hiện chính.
+5. Tóm tắt 3–5 thông điệp chính.`+ANTI },
+
+  { id:"pt-xuhuong", title:"Phân tích xu hướng theo thời gian", chart:true, outline:false, docx:false,
+    tags:["chuỗi thời gian","kèm biểu"],
+    body:`Bạn là chuyên gia phân tích chuỗi thời gian. Hãy phân tích diễn biến chỉ tiêu {{linh_vuc}} của {{don_vi}} qua các kỳ.
+
+[DÁN CHUỖI SỐ LIỆU THEO THỜI GIAN]
+
+Yêu cầu:
+1. Mô tả xu hướng chung (tăng/giảm/đi ngang) và tốc độ.
+2. Tính tốc độ tăng trưởng kỳ gốc và liên hoàn; chỉ ra kỳ tăng/giảm mạnh.
+3. Nhận diện tính mùa vụ, chu kỳ, điểm gãy xu hướng (nếu có).
+4. Đề xuất biểu đồ đường; ghi rõ trục và mốc đáng chú ý.
+5. Cảnh báo yếu tố gây hiểu sai (đổi cách tính, gộp/tách đơn vị…).`+ANTI },
+
+  { id:"pt-sosanh", title:"So sánh giữa các nhóm / địa bàn", chart:true, outline:false, docx:false,
+    tags:["so sánh","xếp hạng","kèm biểu"],
+    body:`Bạn là chuyên gia phân tích so sánh. Hãy so sánh chỉ tiêu {{linh_vuc}} giữa các nhóm/địa bàn trong {{don_vi}}, kỳ {{ky_bao_cao}}.
+
+[DÁN SỐ LIỆU CÁC NHÓM/ĐỊA BÀN]
+
+Yêu cầu:
+1. Xếp hạng, chỉ ra nhóm cao nhất/thấp nhất và khoảng cách.
+2. So với mức trung bình chung; nhóm nào trên/dưới trung bình.
+3. Phân tích chênh lệch, gợi ý nguyên nhân (trong giới hạn dữ liệu).
+4. Đề xuất biểu đồ cột/xếp hạng.
+5. Lưu ý khi so sánh khác quy mô — nên dùng chỉ tiêu tương đối nào.`+ANTI },
+
+  { id:"pt-quanhe", title:"Phân tích mối quan hệ giữa các chỉ tiêu", chart:true, outline:false, docx:false,
+    tags:["tương quan","kèm biểu"],
+    body:`Bạn là nhà phân tích dữ liệu. Hãy xem mối quan hệ giữa các chỉ tiêu trong bộ dữ liệu {{linh_vuc}} của {{don_vi}}.
+
+[DÁN SỐ LIỆU CÁC CHỈ TIÊU]
+
+Yêu cầu:
+1. Chỉ ra cặp chỉ tiêu có khả năng liên hệ và chiều hướng (thuận/nghịch).
+2. Mô tả mức độ liên hệ thận trọng; phân biệt rõ tương quan ≠ nhân quả.
+3. Nêu yếu tố gây nhiễu có thể có.
+4. Đề xuất biểu đồ phân tán hoặc biểu kết hợp.
+5. Cảnh báo kết luận KHÔNG nên rút ra từ dữ liệu này.`+ANTI }
+  ]
+},
+
+{ id:"dubao", name:"Dự báo", color:"#15695b",
+  desc:"Ước lượng xu hướng tương lai, nêu rõ giả định và giới hạn.",
+  prompts:[
+  { id:"db-nganhan", title:"Dự báo xu hướng ngắn hạn", chart:true, outline:false, docx:false,
+    tags:["dự báo","kèm biểu"],
+    body:`Bạn là chuyên gia dự báo thống kê. Dựa trên chuỗi số liệu {{linh_vuc}} của {{don_vi}} dưới đây, hãy dự báo các kỳ tới.
+
+[DÁN CHUỖI SỐ LIỆU LỊCH SỬ]
+
+Yêu cầu:
+1. Nêu phương pháp dự báo phù hợp (xu hướng, trung bình trượt, mùa vụ…) và lý do chọn.
+2. Đưa giá trị dự báo các kỳ tới kèm khoảng dao động hợp lý.
+3. Liệt kê RÕ giả định và điều kiện để dự báo đúng.
+4. Nêu rủi ro làm dự báo sai (cú sốc, đổi chính sách, đổi cách đo).
+5. Đề xuất biểu đồ đường thể hiện số thực tế và phần dự báo (phân biệt rõ).
+Nhấn mạnh đây là ước lượng, tránh tạo cảm giác chắc chắn quá mức.`+ANTI },
+
+  { id:"db-kichban", title:"Dự báo theo kịch bản (cao – cơ sở – thấp)", chart:true, outline:false, docx:false,
+    tags:["kịch bản","kèm biểu"],
+    body:`Bạn là chuyên gia dự báo. Hãy xây 3 kịch bản dự báo cho chỉ tiêu {{linh_vuc}} của {{don_vi}}.
+
+[DÁN SỐ LIỆU & BỐI CẢNH]
+
+Yêu cầu:
+1. Ba kịch bản: cơ sở, cao, thấp — mỗi kịch bản nêu giả định cốt lõi.
+2. Cho giá trị dự báo từng kịch bản theo các kỳ.
+3. Chỉ ra yếu tố quyết định kịch bản nào thành hiện thực.
+4. Khuyến nghị dùng kịch bản nào để lập kế hoạch và vì sao.
+5. Biểu đồ thể hiện cả 3 kịch bản trên cùng trục thời gian.
+Nêu rõ giới hạn; không khẳng định chắc chắn.`+ANTI },
+
+  { id:"db-haukiem", title:"Đánh giá độ chính xác của dự báo cũ", chart:true, outline:false, docx:false,
+    tags:["hậu kiểm","sai số","kèm biểu"],
+    body:`Bạn là chuyên gia đánh giá dự báo. Hãy đối chiếu dự báo trước đây với số thực tế cho chỉ tiêu {{linh_vuc}} của {{don_vi}}.
+
+[DÁN SỐ DỰ BÁO & SỐ THỰC TẾ]
+
+Yêu cầu:
+1. Tính sai số từng kỳ (chênh lệch tuyệt đối và %).
+2. Đánh giá mức sai số chung; dự báo thiên cao hay thấp.
+3. Phân tích nguyên nhân sai.
+4. Đề xuất điều chỉnh cách dự báo kỳ sau.
+5. Biểu đồ so sánh đường dự báo và đường thực tế.`+ANTI }
+  ]
+},
+
+{ id:"research", name:"Nghiên cứu chuyên sâu", color:"#2f4858",
+  desc:"Khung Deep Research: lập kế hoạch, tổng quan tài liệu, tổng hợp đa nguồn, viết báo cáo nghiên cứu.",
+  prompts:[
+  { id:"rs-kehoach", title:"Lập kế hoạch nghiên cứu (research plan)", chart:false, outline:true, docx:true,
+    tags:["deep research","kế hoạch"],
+    body:`Bạn là chuyên gia nghiên cứu chính sách/thống kê. Tôi cần nghiên cứu sâu về chủ đề dưới đây. Hãy lập KẾ HOẠCH NGHIÊN CỨU trước khi đi vào chi tiết.
+
+Chủ đề: [MÔ TẢ CHỦ ĐỀ], trong bối cảnh {{don_vi}}.
+Mục tiêu / câu hỏi tôi muốn trả lời: [LIỆT KÊ]
+
+Yêu cầu:
+1. Làm rõ câu hỏi nghiên cứu chính và các câu hỏi phụ.
+2. Đề xuất khung phân tích / cách tiếp cận và lý do.
+3. Liệt kê loại dữ liệu và nguồn cần thu thập (ưu tiên nguồn chính thống: số liệu thống kê, văn bản, báo cáo).
+4. Các bước tiến hành theo thứ tự, sản phẩm mỗi bước.
+5. Rủi ro về dữ liệu/độ tin cậy và cách giảm thiểu.
+Trình bày có cấu trúc, mục lục đánh số.`+DOCX },
+
+  { id:"rs-tongquan", title:"Tổng quan tài liệu / hiện trạng (từ nguồn tôi cấp)", chart:false, outline:false, docx:true,
+    tags:["tổng quan","literature"],
+    body:`Bạn là nhà nghiên cứu. Hãy tổng hợp TỔNG QUAN về chủ đề "[CHỦ ĐỀ]" CHỈ dựa trên các tài liệu/nguồn tôi cung cấp dưới đây.
+
+[DÁN CÁC TÀI LIỆU / TRÍCH DẪN / SỐ LIỆU NGUỒN]
+
+Yêu cầu:
+1. Tổng hợp các quan điểm/kết quả chính, nhóm theo chủ đề con.
+2. Chỉ ra điểm đồng thuận, điểm khác biệt/mâu thuẫn giữa các nguồn.
+3. Nêu khoảng trống còn thiếu thông tin.
+4. Với mỗi luận điểm, ghi rõ dựa trên nguồn nào (đánh số nguồn).
+NGUYÊN TẮC: Không thêm thông tin, số liệu hay trích dẫn ngoài tài liệu tôi cấp; không bịa nguồn. Nếu một ý không có trong nguồn, ghi "[không có trong tài liệu cung cấp]".`+DOCX },
+
+  { id:"rs-tonghop", title:"Tổng hợp & đối chiếu đa nguồn", chart:false, outline:false, docx:true,
+    tags:["synthesis","đa nguồn"],
+    body:`Bạn là chuyên gia tổng hợp nghiên cứu. Tôi có nhiều nguồn nói về cùng vấn đề. Hãy tổng hợp thành một bức tranh mạch lạc.
+
+[DÁN CÁC NGUỒN, ĐÁNH SỐ 1,2,3…]
+
+Yêu cầu:
+1. Lập bảng đối chiếu: nội dung/chỉ tiêu × từng nguồn, nêu điểm trùng và điểm vênh.
+2. Khi các nguồn mâu thuẫn, nêu rõ và bàn nguyên nhân có thể (phạm vi, thời điểm, phương pháp).
+3. Rút ra kết luận có cơ sở; phân biệt rõ "điều có bằng chứng" và "điều còn suy đoán".
+4. Trích dẫn nguồn cho từng nhận định (đánh số).
+Không suy diễn ngoài dữ liệu; không bịa số.`+DOCX },
+
+  { id:"rs-baocao", title:"Viết báo cáo nghiên cứu hoàn chỉnh", chart:true, outline:true, docx:true,
+    tags:["báo cáo NC","kèm biểu"],
+    body:`Bạn là nhà nghiên cứu. Hãy viết BÁO CÁO NGHIÊN CỨU về "[CHỦ ĐỀ]" cho {{don_vi}}, dựa trên dữ liệu và phát hiện dưới đây.
+
+[DÁN DỮ LIỆU / KẾT QUẢ PHÂN TÍCH / NGUỒN]
+
+Yêu cầu:
+1. Bố cục: Đặt vấn đề → Mục tiêu, câu hỏi → Phương pháp & dữ liệu → Kết quả & phân tích → Thảo luận → Kết luận & khuyến nghị → Nguồn tham khảo.
+2. Phần kết quả gắn với số liệu, đề xuất biểu đồ phù hợp cho từng phát hiện.
+3. Phần khuyến nghị bám sát phát hiện, khả thi với {{don_vi}}.
+4. Nêu rõ giới hạn nghiên cứu.`+ANTI+DOCX }
+  ]
+},
+
+{ id:"excelsql", name:"Sinh công thức Excel / SQL", color:"#a96a0c",
+  desc:"Tạo công thức Excel, hàm, pivot và câu lệnh SQL từ mô tả yêu cầu.",
+  prompts:[
+  { id:"es-excel", title:"Sinh công thức Excel từ mô tả", chart:false, outline:false, docx:false,
+    tags:["excel","công thức"],
+    body:`Bạn là chuyên gia Excel. Hãy viết công thức Excel cho yêu cầu dưới đây.
+
+Mô tả bảng dữ liệu (tên cột & ví dụ vài dòng): [MÔ TẢ]
+Việc cần làm: [MÔ TẢ KẾT QUẢ MONG MUỐN]
+
+Yêu cầu:
+1. Đưa công thức hoàn chỉnh, ghi rõ đặt ở ô nào, vùng tham chiếu nào.
+2. Giải thích ngắn từng phần của công thức.
+3. Nêu cách kéo/sao chép cho cả cột và lỗi thường gặp cần tránh.
+4. Nếu có cách khác tốt hơn (hàm mới như XLOOKUP, FILTER), nêu thêm.
+Dùng dấu phân cách phù hợp Excel tiếng Việt (dấu chấm phẩy ;) và ghi chú nếu khác.` },
+
+  { id:"es-pivot", title:"Hướng dẫn PivotTable / tổng hợp", chart:false, outline:false, docx:false,
+    tags:["pivot","tổng hợp"],
+    body:`Bạn là chuyên gia Excel. Tôi cần tổng hợp dữ liệu dưới đây bằng PivotTable hoặc công thức.
+
+Mô tả dữ liệu: [TÊN CỘT & VÍ DỤ]
+Kết quả tổng hợp cần có: [VD: tổng theo từng xã/phường và theo tháng]
+
+Yêu cầu:
+1. Hướng dẫn dựng PivotTable: đưa trường nào vào Hàng/Cột/Giá trị/Bộ lọc.
+2. Nêu cách hiển thị đúng (tính tổng, đếm, %, …).
+3. Đưa thêm phương án dùng công thức (SUMIFS/COUNTIFS) cho cùng kết quả để kiểm chứng.` },
+
+  { id:"es-sql", title:"Sinh câu lệnh SQL từ yêu cầu", chart:false, outline:false, docx:false,
+    tags:["sql","truy vấn"],
+    body:`Bạn là chuyên gia SQL. Hãy viết câu lệnh SQL cho yêu cầu dưới đây.
+
+Hệ quản trị CSDL: [VD: SQL Server / MySQL / PostgreSQL / SQLite]
+Cấu trúc bảng (tên bảng, cột, kiểu): [MÔ TẢ]
+Yêu cầu truy vấn: [MÔ TẢ KẾT QUẢ MONG MUỐN]
+
+Yêu cầu:
+1. Viết câu lệnh hoàn chỉnh, định dạng dễ đọc, có chú thích.
+2. Giải thích logic từng phần (JOIN, WHERE, GROUP BY, HAVING…).
+3. Nêu chỉ mục (index) nên có để chạy nhanh, và lỗi/cạm bẫy thường gặp.
+4. Nếu yêu cầu mơ hồ, nêu giả định bạn đã đặt.
+Chỉ dùng đúng tên bảng/cột tôi cung cấp; nếu cần cột chưa có, ghi rõ "[cần thêm cột …]".` },
+
+  { id:"es-giaithich", title:"Giải thích & sửa lỗi công thức/câu lệnh", chart:false, outline:false, docx:false,
+    tags:["debug","giải thích"],
+    body:`Bạn là chuyên gia Excel/SQL. Hãy giải thích và sửa công thức/câu lệnh dưới đây.
+
+[DÁN CÔNG THỨC EXCEL HOẶC CÂU LỆNH SQL]
+Lỗi gặp phải hoặc kết quả sai: [MÔ TẢ]
+
+Yêu cầu:
+1. Giải thích công thức/câu lệnh đang làm gì.
+2. Chỉ ra nguyên nhân lỗi/kết quả sai.
+3. Đưa bản sửa hoàn chỉnh và giải thích chỗ đã đổi.
+4. Gợi ý cách viết gọn/an toàn hơn nếu có.` }
+  ]
+}
+];
+
+/* ============ LOGIC ============ */
+const $ = s=>document.querySelector(s);
+const store = {
+  get(k,d){ try{const v=localStorage.getItem(k); return v===null?d:JSON.parse(v)}catch(e){return d} },
+  set(k,v){ try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} }
+};
+const defaults = ()=>Object.fromEntries(VARS.map(v=>[v.k, v.def||'']));
+let varVals  = store.get('hd_vars', defaults());
+let stars    = store.get('hd_stars', {});
+let activeFilter = 'all';
+let query = '';
+
+const esc = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function resolve(text){
+  return text.replace(/\{\{(\w+)\}\}/g,(m,k)=> (varVals[k]&&varVals[k].trim()) ? varVals[k] : m );
+}
+function renderText(text){
+  return esc(text).replace(/\{\{(\w+)\}\}/g,(m,k)=>{
+    const v = varVals[k]&&varVals[k].trim();
+    const lbl=(VARS.find(x=>x.k===k)||{}).label||k;
+    return v ? `<span class="v set" title="${esc(lbl)}">${esc(v)}</span>`
+             : `<span class="v" title="${esc(lbl)}: chưa điền">${m}</span>`;
+  });
+}
+function missingVars(text){
+  const set=new Set(); let m; const re=/\{\{(\w+)\}\}/g;
+  while((m=re.exec(text))){ if(!(varVals[m[1]]&&varVals[m[1]].trim())) set.add(m[1]); }
+  return [...set];
+}
+
+function buildVars(){
+  const g=$('#vargrid'); g.innerHTML='';
+  VARS.forEach(v=>{
+    const val=varVals[v.k]||'';
+    const f=document.createElement('div'); f.className='vfield';
+    f.innerHTML=`<label>${esc(v.label)} <code>{{${v.k}}}</code></label>
+      <input data-k="${v.k}" placeholder="${esc(v.ph)}" value="${esc(val)}">`;
+    g.appendChild(f);
+  });
+  g.querySelectorAll('input').forEach(inp=>{
+    if(inp.value.trim()) inp.classList.add('filled');
+    inp.addEventListener('input',e=>{
+      varVals[e.target.dataset.k]=e.target.value;
+      e.target.classList.toggle('filled', !!e.target.value.trim());
+      store.set('hd_vars',varVals); refreshPrompts(); flash('#varSaved');
+    });
+  });
+}
+
+function buildTree(){
+  const tree=$('#tree'); tree.innerHTML='';
+  GROUPS.forEach((grp,gi)=>{
+    const g=document.createElement('div'); g.className='tree-grp'; g.dataset.g=grp.id;
+    if(gi===0) g.classList.add('open');
+    const kids=grp.prompts.map(p=>
+      `<a data-id="${p.id}" data-g="${grp.id}"><span class="tname">${esc(p.title)}</span></a>`).join('');
+    g.innerHTML=`
+      <div class="tree-head" data-g="${grp.id}">
+        <svg class="caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="dot" style="background:${grp.color}"></span>
+        <span class="tname">${esc(grp.name)}</span>
+        <span class="count">${grp.prompts.length}</span>
+      </div>
+      <div class="tree-kids">${kids}</div>`;
+    tree.appendChild(g);
+  });
+  // bấm tiêu đề nhóm: gập/mở + cuộn tới nhóm
+  tree.querySelectorAll('.tree-head').forEach(h=>{
+    h.addEventListener('click',()=>{
+      const grp=h.parentElement;
+      const wasOpen=grp.classList.contains('open');
+      grp.classList.toggle('open');
+      if(!wasOpen){ document.getElementById('grp-'+h.dataset.g)?.scrollIntoView(); }
+    });
+  });
+  // bấm prompt con: mở card đó, cuộn tới, đánh dấu
+  tree.querySelectorAll('.tree-kids a').forEach(a=>{
+    a.addEventListener('click',e=>{
+      e.stopPropagation();
+      const id=a.dataset.id;
+      const card=document.querySelector('.card[data-id="'+id+'"]');
+      if(card){
+        card.classList.add('open');
+        card.scrollIntoView({block:'center'});
+        card.style.transition='box-shadow .3s';
+        card.style.boxShadow='0 0 0 2px var(--green)';
+        setTimeout(()=>{card.style.boxShadow='';},900);
+      }
+      markCurrent(id);
+    });
+  });
+  updateTreeStars();
+}
+function markCurrent(id){
+  document.querySelectorAll('.tree-kids a').forEach(a=>a.classList.toggle('cur',a.dataset.id===id));
+}
+function updateTreeStars(){
+  document.querySelectorAll('.tree-kids a').forEach(a=>{
+    const on=stars[a.dataset.id];
+    let s=a.querySelector('.star-mini');
+    if(on&&!s){ s=document.createElement('span'); s.className='star-mini'; s.textContent=' ★'; a.appendChild(s); }
+    else if(!on&&s){ s.remove(); }
+  });
+}
+
+function buildGroups(){
+  const root=$('#groups'); root.innerHTML='';
+  GROUPS.forEach((grp,gi)=>{
+    const sec=document.createElement('section');
+    sec.className='group'; sec.id='grp-'+grp.id; sec.dataset.g=grp.id;
+    sec.innerHTML=`<div class="group-head">
+      <div class="gnum" style="background:${grp.color}">${gi+1}</div>
+      <div><h2>${esc(grp.name)}</h2><p>${esc(grp.desc)}</p></div></div>`;
+    grp.prompts.forEach(p=>{
+      const card=document.createElement('div');
+      card.className='card'; card.dataset.id=p.id; card.dataset.g=grp.id;
+      card.dataset.search=(p.title+' '+(p.tags||[]).join(' ')+' '+p.body).toLowerCase();
+      card.dataset.chart=p.chart?'1':'0'; card.dataset.docx=p.docx?'1':'0';
+      const tagHTML=[
+        p.chart?'<span class="tag chart">Kèm biểu số liệu</span>':'',
+        p.docx?'<span class="tag docx">Xuất .docx</span>':'',
+        p.outline?'<span class="tag outline">Đề cương</span>':'',
+        ...(p.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`)
+      ].join('');
+      card.innerHTML=`
+        <div class="card-head">
+          <svg class="star ${stars[p.id]?'on':''}" data-id="${p.id}" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.7 1.4 6.8L12 17.8 5 21.2l1.4-6.8L1.3 9l6.9-.7z" ${stars[p.id]?'':'fill="none"'}/></svg>
+          <div class="title"><h3>${esc(p.title)}</h3><div class="tagrow">${tagHTML}</div></div>
+          <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="ptext" data-body="${encodeURIComponent(p.body)}">${renderText(p.body)}</div>
+          <div class="card-actions">
+            <button class="btn primary act-copy">Sao chép prompt</button>
+            <button class="btn ghost act-copyraw">Copy bản gốc</button>
+            ${p.docx?'<button class="btn docx act-docx">Tải khung .docx</button>':''}
+            <span class="copied">Đã sao chép ✓</span>
+            <span class="miss"></span>
+          </div>
+        </div>`;
+      sec.appendChild(card);
+    });
+    root.appendChild(sec);
+  });
+  bindCards(); refreshPrompts();
+}
+
+function bindCards(){
+  document.querySelectorAll('.card-head').forEach(h=>{
+    h.addEventListener('click',e=>{ if(e.target.closest('.star'))return; h.parentElement.classList.toggle('open'); });
+  });
+  document.querySelectorAll('.star').forEach(s=>{
+    s.addEventListener('click',e=>{
+      e.stopPropagation(); const id=s.dataset.id; stars[id]=!stars[id]; store.set('hd_stars',stars);
+      s.classList.toggle('on',stars[id]); s.querySelector('path').setAttribute('fill', stars[id]?'currentColor':'none');
+      updateCounts(); updateTreeStars(); if(activeFilter==='star') applyFilter();
+    });
+  });
+  document.querySelectorAll('.act-copy').forEach(b=>b.addEventListener('click',()=>{
+    const card=b.closest('.card'); copy(resolve(decodeURIComponent(card.querySelector('.ptext').dataset.body)), card);
+  }));
+  document.querySelectorAll('.act-copyraw').forEach(b=>b.addEventListener('click',()=>{
+    const card=b.closest('.card'); copy(decodeURIComponent(card.querySelector('.ptext').dataset.body), card);
+  }));
+  document.querySelectorAll('.act-docx').forEach(b=>b.addEventListener('click',()=>{
+    const card=b.closest('.card');
+    const id=card.dataset.id;
+    const p=GROUPS.flatMap(g=>g.prompts).find(x=>x.id===id);
+    downloadDoc(p.title, isVanban(card.dataset.g));
+  }));
+}
+
+function copy(text,card){
+  const done=()=>{ const c=card.querySelector('.copied'); c.classList.add('show'); setTimeout(()=>c.classList.remove('show'),1600); };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done,()=>fb(text,done));
+  else fb(text,done);
+}
+function fb(text,cb){ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select(); try{document.execCommand('copy')}catch(e){} ta.remove(); cb&&cb(); }
+
+function refreshPrompts(){
+  document.querySelectorAll('.ptext').forEach(p=>{
+    const raw=decodeURIComponent(p.dataset.body); p.innerHTML=renderText(raw);
+    const miss=missingVars(raw); const m=p.closest('.card').querySelector('.miss');
+    m.textContent = miss.length ? `Còn ${miss.length} biến chưa điền` : '';
+  });
+}
+
+function setFilter(f){ activeFilter=f; syncFilterUI(); applyFilter(); }
+function syncFilterUI(){
+  ['all','star','chart','docx'].forEach(f=>$('#filt-'+f).classList.toggle('active',activeFilter===f));
+}
+function applyFilter(){
+  let visible=0;
+  GROUPS.forEach(grp=>{
+    const sec=document.getElementById('grp-'+grp.id); let shown=0;
+    sec.querySelectorAll('.card').forEach(card=>{
+      const matchQ=!query||card.dataset.search.includes(query);
+      let matchF=true;
+      if(activeFilter==='star') matchF=!!stars[card.dataset.id];
+      else if(activeFilter==='chart') matchF=card.dataset.chart==='1';
+      else if(activeFilter==='docx') matchF=card.dataset.docx==='1';
+      else if(activeFilter!=='all') matchF=card.dataset.g===activeFilter;
+      const show=matchQ&&matchF; card.style.display=show?'':'none'; if(show){shown++;visible++}
+      // đồng bộ cây
+      const link=document.querySelector('.tree-kids a[data-id="'+card.dataset.id+'"]');
+      if(link) link.style.display=show?'':'none';
+    });
+    sec.style.display=shown?'':'none';
+    // ẩn nhánh cây nếu nhóm rỗng; tự mở nhánh khi đang tìm kiếm
+    const grpEl=document.querySelector('.tree-grp[data-g="'+grp.id+'"]');
+    if(grpEl){
+      grpEl.style.display=shown?'':'none';
+      if(query||activeFilter!=='all'){ if(shown) grpEl.classList.add('open'); }
+    }
+  });
+  $('#empty').style.display=visible?'none':'block';
+}
+
+function updateCounts(){
+  const all=GROUPS.reduce((n,g)=>n+g.prompts.length,0);
+  const chart=GROUPS.reduce((n,g)=>n+g.prompts.filter(p=>p.chart).length,0);
+  const docx=GROUPS.reduce((n,g)=>n+g.prompts.filter(p=>p.docx).length,0);
+  const st=Object.values(stars).filter(Boolean).length;
+  $('#cnt-all').textContent=all; $('#cnt-chart').textContent=chart; $('#cnt-docx').textContent=docx; $('#cnt-star').textContent=st;
+  $('#total').textContent=`${all} prompt · ${GROUPS.length} nhóm`;
+}
+function flash(sel){ const e=$(sel); e.classList.add('show'); clearTimeout(e._t); e._t=setTimeout(()=>e.classList.remove('show'),1200); }
+function isVanban(gid){ return gid==='vanphong'; }
+
+/* ====== Tạo file .docx THẬT (OOXML) ngay trong trình duyệt — khung thể thức NĐ30 ====== */
+const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(b){let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC_TABLE[(c^b[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function sB(s){return new TextEncoder().encode(s);}
+function zipStore(files){
+  const u16=v=>[v&0xFF,(v>>8)&0xFF], u32=v=>[v&0xFF,(v>>8)&0xFF,(v>>16)&0xFF,(v>>>24)&0xFF];
+  const enc=[],cen=[];let off=0;
+  for(const f of files){
+    const name=sB(f.name),data=f.data,crc=crc32(data);
+    const lh=[].concat([0x50,0x4b,0x03,0x04],u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0));
+    const lb=new Uint8Array(lh.length+name.length+data.length);
+    lb.set(lh,0);lb.set(name,lh.length);lb.set(data,lh.length+name.length);enc.push(lb);
+    const ch=[].concat([0x50,0x4b,0x01,0x02],u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(off));
+    const cb=new Uint8Array(ch.length+name.length);cb.set(ch,0);cb.set(name,ch.length);cen.push(cb);
+    off+=lb.length;
+  }
+  const cdSize=cen.reduce((n,b)=>n+b.length,0);
+  const end=[].concat([0x50,0x4b,0x05,0x06],u16(0),u16(0),u16(files.length),u16(files.length),u32(cdSize),u32(off),u16(0));
+  const total=enc.reduce((n,b)=>n+b.length,0)+cdSize+end.length;
+  const out=new Uint8Array(total);let p=0;
+  for(const b of enc){out.set(b,p);p+=b.length;}
+  for(const b of cen){out.set(b,p);p+=b.length;}
+  out.set(new Uint8Array(end),p);return out;
+}
+function xEsc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));}
+function paraXml(b){
+  const jc=(b.t==='center'||b.t==='cb')?'<w:jc w:val="center"/>':'';
+  const rp=[];
+  if(b.bold||b.t==='cb'||b.t==='h')rp.push('<w:b/>');
+  if(b.italic)rp.push('<w:i/>');
+  if(b.underline)rp.push('<w:u w:val="single"/>');
+  const rPr=rp.length?`<w:rPr>${rp.join('')}</w:rPr>`:'';
+  return `<w:p><w:pPr><w:spacing w:before="40" w:after="40" w:line="312" w:lineRule="auto"/>${jc}</w:pPr><w:r>${rPr}<w:t xml:space="preserve">${xEsc(b.text)}</w:t></w:r></w:p>`;
+}
+function buildDocx(blocks){
+  const body=blocks.map(paraXml).join('')+
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="850" w:bottom="1134" w:left="1701" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>';
+  const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}</w:body></w:document>`;
+  const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+  const drels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr></w:rPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>`;
+  return zipStore([
+    {name:'[Content_Types].xml',data:sB(ct)},
+    {name:'_rels/.rels',data:sB(rels)},
+    {name:'word/_rels/document.xml.rels',data:sB(drels)},
+    {name:'word/document.xml',data:sB(docXml)},
+    {name:'word/styles.xml',data:sB(styles)},
+  ]);
+}
+function docBlocks(title,isVB){
+  const cq=(varVals.co_quan||'……………………').toUpperCase();
+  const kg=varVals.noi_nhan||'……………………';
+  const dv=varVals.don_vi||'tỉnh Vĩnh Long';
+  const t=new Date();
+  const dd='Vĩnh Long, ngày '+t.getDate()+' tháng '+(t.getMonth()+1)+' năm '+t.getFullYear();
+  const head=[
+    {t:'cb',text:cq},{t:'p',text:'Số: ……/……'},
+    {t:'cb',text:'CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM'},
+    {t:'center',text:'Độc lập - Tự do - Hạnh phúc',bold:true,underline:true},
+    {t:'center',text:dd,italic:true},
+  ];
+  if(isVB) return head.concat([
+    {t:'cb',text:title.toUpperCase()},
+    {t:'center',text:'……………………………………',italic:true},
+    {t:'p',text:'Kính gửi: '+kg},
+    {t:'p',text:'[Nội dung — dán phần kết quả của AI vào đây.]'},
+    {t:'p',text:''},
+    {t:'p',text:'Nơi nhận:',bold:true},
+    {t:'p',text:'- '+kg+';',italic:true},
+    {t:'p',text:'- Lưu: VT.',italic:true},
+    {t:'center',text:'QUYỀN HẠN, CHỨC VỤ NGƯỜI KÝ',bold:true},
+    {t:'center',text:'(Họ và tên)'},
+  ]);
+  return head.concat([
+    {t:'cb',text:'BÁO CÁO'},
+    {t:'center',text:title+' — '+dv,italic:true},
+    {t:'p',text:'I. ĐẶT VẤN ĐỀ',bold:true},{t:'p',text:'[…]'},
+    {t:'p',text:'II. KẾT QUẢ / NỘI DUNG CHÍNH',bold:true},{t:'p',text:'[Dán nội dung & bảng số liệu từ AI vào đây.]'},
+    {t:'p',text:'III. ĐÁNH GIÁ CHUNG',bold:true},{t:'p',text:'[…]'},
+    {t:'p',text:'IV. KIẾN NGHỊ',bold:true},{t:'p',text:'[…]'},
+    {t:'p',text:''},
+    {t:'p',text:'Nơi nhận:',bold:true},
+    {t:'p',text:'- '+kg+';',italic:true},
+    {t:'p',text:'- Lưu: VT.',italic:true},
+    {t:'center',text:'QUYỀN HẠN, CHỨC VỤ NGƯỜI KÝ',bold:true},
+    {t:'center',text:'(Họ và tên)'},
+  ]);
+}
+function downloadDoc(title,isVB){
+  const bytes=buildDocx(docBlocks(title,isVB));
+  const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  const a=document.createElement('a');
+  const safe=title.replace(/[^\p{L}\p{N} ]/gu,'').trim().replace(/\s+/g,'_').slice(0,50)||'mau';
+  a.href=URL.createObjectURL(blob);a.download='Khung_'+safe+'.docx';
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},100);
+}
+
+/* events */
+$('#q').addEventListener('input',e=>{ query=e.target.value.trim().toLowerCase(); applyFilter(); });
+$('#filt-all').onclick=()=>setFilter('all');
+$('#filt-star').onclick=()=>setFilter('star');
+$('#filt-chart').onclick=()=>setFilter('chart');
+$('#filt-docx').onclick=()=>setFilter('docx');
+$('#resetVars').onclick=()=>{ varVals=defaults(); store.set('hd_vars',varVals); buildVars(); refreshPrompts(); };
+$('#clearVars').onclick=()=>{ varVals=Object.fromEntries(VARS.map(v=>[v.k,''])); store.set('hd_vars',varVals); buildVars(); refreshPrompts(); };
+$('#dl-totrinh').onclick=()=>downloadDoc('Tờ trình',true);
+$('#dl-baocao').onclick =()=>downloadDoc('Báo cáo',false);
+
+/* init */
+buildVars(); buildTree(); buildGroups(); updateCounts(); syncFilterUI();
+</script>
+</body>
+</html>
